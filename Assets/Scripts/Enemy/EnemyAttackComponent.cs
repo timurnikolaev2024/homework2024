@@ -13,7 +13,7 @@ namespace ShootEmUp
         
         public event Enemy.FireHandler OnFire;
 
-        public void ResetCountdown()
+        public void Reset()
         {
             this.currentTime = this.countdown;
         }
