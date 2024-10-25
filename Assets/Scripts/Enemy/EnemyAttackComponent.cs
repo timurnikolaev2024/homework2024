@@ -1,40 +1,38 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace ShootEmUp
 {
     public class EnemyAttackComponent : MonoBehaviour
     {
-        [SerializeField] private float countdown;
-
+        [FormerlySerializedAs("countdown")] [SerializeField] private float _countdown;
         [NonSerialized] public Player target;
-        
-        [SerializeField] public Transform firePoint;
+        [FormerlySerializedAs("firePoint")] [SerializeField] private Transform _firePoint;
         
         public event Enemy.FireHandler OnFire;
+        private float currentTime;
 
         public void Reset()
         {
-            this.currentTime = this.countdown;
+            currentTime = _countdown;
         }
 
         public void Attack()
         {
-            if (this.target.health <= 0)
+            if (target.health <= 0)
                 return;
             
-            this.currentTime -= Time.fixedDeltaTime;
-            if (this.currentTime <= 0)
+            currentTime -= Time.fixedDeltaTime;
+            if (currentTime <= 0)
             {
-                Vector2 startPosition = this.firePoint.position;
-                Vector2 vector = (Vector2) this.target.transform.position - startPosition;
+                Vector2 startPosition = _firePoint.position;
+                Vector2 vector = (Vector2) target.transform.position - startPosition;
                 Vector2 direction = vector.normalized;
-                this.OnFire?.Invoke(startPosition, direction);
+                OnFire?.Invoke(startPosition, direction);
                     
-                this.currentTime += this.countdown;
+                currentTime += _countdown;
             }
         }
-
-        private float currentTime;
     }
 }

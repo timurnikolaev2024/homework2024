@@ -1,43 +1,42 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace ShootEmUp
 {
     public sealed class PlayerController : MonoBehaviour
     {
-        [SerializeField] private Player character;
+        [FormerlySerializedAs("character")] [SerializeField] private Player _character;
+        [FormerlySerializedAs("bulletManager")] [SerializeField] private BulletManager _bulletManager;
+        [FormerlySerializedAs("bulletConfig")] [SerializeField] private BulletConfig _bulletConfig;
 
-        [SerializeField] private BulletManager bulletManager;
-        
-        [SerializeField] private BulletConfig bulletConfig;
+        private readonly PlayerInput _playerInput = new();
+        private CharacterAttackHandler _characterAttackHandler;
 
-        private readonly PlayerInput playerInput = new();
-        private CharacterAttackHandler characterAttackHandler;
-
-        private bool fireRequired;
-        private float moveDirection;
+        private bool _fireRequired;
+        private float _moveDirection;
 
         private void Awake()
         {
-            characterAttackHandler = new(bulletConfig, bulletManager);
+            _characterAttackHandler = new(_bulletConfig, _bulletManager);
         }
 
         private void Update()
         {
-            if (playerInput.GetFireRequired())
+            if (_playerInput.GetFireRequired())
             {
-                characterAttackHandler.Attack(character.firePoint.position, 
-                    character.firePoint.rotation * Vector3.up);
+                _characterAttackHandler.Attack(_character.firePoint.position, 
+                    _character.firePoint.rotation * Vector3.up);
 
-                fireRequired = false;
+                _fireRequired = false;
             }
             
-            moveDirection = playerInput.GetDirection();
+            _moveDirection = _playerInput.GetDirection();
         }
 
         private void FixedUpdate()
         {
-            character.Move(this.moveDirection);
+            _character.Move(this._moveDirection);
         }
     }
 }

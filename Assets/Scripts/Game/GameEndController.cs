@@ -1,16 +1,17 @@
 ﻿using System;
 using ShootEmUp;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Game
 {
     public class GameEndController : MonoBehaviour
     {
-        [SerializeField] private Player character;
+        [FormerlySerializedAs("character")] [SerializeField] private Player _character;
 
         private void Awake()
         {
-            character.OnHealthEmpty += OnGameEnd;
+            _character.OnHealthEmpty += OnGameEnd;
         }
 
         private void OnGameEnd(Player obj)
@@ -20,7 +21,7 @@ namespace Game
 
         private void OnDestroy()
         {
-            character.OnHealthEmpty -= OnGameEnd;
+            _character.OnHealthEmpty -= OnGameEnd;
         }
     }
 }

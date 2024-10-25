@@ -1,34 +1,38 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace ShootEmUp
 {
     public class BulletSpawner : MonoBehaviour
     {
-        [SerializeField] public Bullet prefab;
-        [SerializeField] public Transform worldTransform;
-        [SerializeField] private Transform container;
+        [FormerlySerializedAs("prefab")] 
+        [SerializeField] private Bullet _prefab;
+        [FormerlySerializedAs("worldTransform")] 
+        [SerializeField] private Transform _worldTransform;
+        [FormerlySerializedAs("container")] 
+        [SerializeField] private Transform _container;
         
-        private readonly Queue<Bullet> m_bulletPool = new();
+        private readonly Queue<Bullet> _bulletPool = new();
         
         public void FillPool(int count)
         {
             for (var i = 0; i < count; i++)
             {
-                Bullet bullet = Instantiate(this.prefab, this.container);
-                this.m_bulletPool.Enqueue(bullet);
+                Bullet bullet = Instantiate(_prefab, _container);
+                _bulletPool.Enqueue(bullet);
             }
         }
 
         public Bullet SpawnBullet(BulletSpawnSettings settings)
         {
-            if (this.m_bulletPool.TryDequeue(out var bullet))
+            if (_bulletPool.TryDequeue(out var bullet))
             {
-                bullet.transform.SetParent(this.worldTransform);
+                bullet.transform.SetParent(_worldTransform);
             }
             else
             {
-                bullet = Instantiate(this.prefab, this.worldTransform);
+                bullet = Instantiate(_prefab, _worldTransform);
             }
 
             bullet.transform.position = settings.firePointPosition;
@@ -42,8 +46,8 @@ namespace ShootEmUp
 
         public void RemoveBullet(Bullet bullet)
         {
-            bullet.transform.SetParent(this.container);
-            this.m_bulletPool.Enqueue(bullet);
+            bullet.transform.SetParent(this._container);
+            _bulletPool.Enqueue(bullet);
         }
     }
 }

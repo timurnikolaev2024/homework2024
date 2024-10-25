@@ -1,15 +1,17 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace ShootEmUp
 {
     public sealed class BulletManager : MonoBehaviour
     {
-        [SerializeField] private LevelBounds levelBounds;
+        [FormerlySerializedAs("levelBounds")] 
+        [SerializeField] private LevelBounds _levelBounds;
         [SerializeField] private BulletSpawner _bulletSpawner;
         
-        private readonly HashSet<Bullet> m_activeBullets = new();
-        private readonly List<Bullet> m_cache = new();
+        private readonly HashSet<Bullet> _activeBullets = new();
+        private readonly List<Bullet> _cache = new();
 
         private void Awake()
         {
@@ -18,15 +20,15 @@ namespace ShootEmUp
 
         private void FixedUpdate()
         {
-            this.m_cache.Clear();
-            this.m_cache.AddRange(this.m_activeBullets);
+            _cache.Clear();
+            _cache.AddRange(_activeBullets);
 
-            for (int i = 0, count = this.m_cache.Count; i < count; i++)
+            for (int i = 0, count = _cache.Count; i < count; i++)
             {
-                Bullet bullet = this.m_cache[i];
-                if (!this.levelBounds.InBounds(bullet.transform.position))
+                Bullet bullet = _cache[i];
+                if (!_levelBounds.InBounds(bullet.transform.position))
                 {
-                    this.RemoveBullet(bullet);
+                    RemoveBullet(bullet);
                 }
             }
         }
@@ -35,7 +37,7 @@ namespace ShootEmUp
         {
             var bullet = _bulletSpawner.SpawnBullet(settings);
             
-            if (m_activeBullets.Add(bullet))
+            if (_activeBullets.Add(bullet))
             {
                 bullet.OnCollisionEntered += OnBulletCollision;
             }
@@ -43,15 +45,15 @@ namespace ShootEmUp
 
         private void OnBulletCollision(Bullet bullet, Collision2D collision)
         {
-            this.DealDamage(bullet, collision.gameObject);
-            this.RemoveBullet(bullet);
+            DealDamage(bullet, collision.gameObject);
+            RemoveBullet(bullet);
         }
 
         private void RemoveBullet(Bullet bullet)
         {
-            if (this.m_activeBullets.Remove(bullet))
+            if (_activeBullets.Remove(bullet))
             {
-                bullet.OnCollisionEntered -= this.OnBulletCollision;
+                bullet.OnCollisionEntered -= OnBulletCollision;
                 _bulletSpawner.RemoveBullet(bullet);
             }
         }

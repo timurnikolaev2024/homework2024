@@ -2,39 +2,33 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 namespace ShootEmUp
 {
     public sealed class EnemyManager : MonoBehaviour
     {
-        [SerializeField] private Transform[] spawnPositions;
-
-        [SerializeField] private Transform[] attackPositions;
-        
-        [SerializeField] private Player character;
-
-        [SerializeField] private Transform worldTransform;
-
-        [SerializeField] private Transform container;
-
-        [SerializeField] private Enemy prefab;
-        
+        [FormerlySerializedAs("spawnPositions")] [SerializeField] private Transform[] _spawnPositions;
+        [FormerlySerializedAs("attackPositions")] [SerializeField] private Transform[] _attackPositions;
+        [FormerlySerializedAs("character")] [SerializeField] private Player _character;
+        [FormerlySerializedAs("worldTransform")] [SerializeField] private Transform _worldTransform;
+        [FormerlySerializedAs("container")] [SerializeField] private Transform _container;
+        [FormerlySerializedAs("prefab")] [SerializeField] private Enemy _prefab;
         [SerializeField] private BulletManager _bulletSystem;
-
         [SerializeField] private BulletConfig _config;
         
-        private readonly HashSet<Enemy> m_activeEnemies = new();
-        private CharacterAttackHandler characterAttackHandler;
-        private readonly Queue<Enemy> enemyPool = new();
+        private readonly HashSet<Enemy> _activeEnemies = new();
+        private CharacterAttackHandler _characterAttackHandler;
+        private readonly Queue<Enemy> _enemyPool = new();
         
         private void Awake()
         {
-            characterAttackHandler = new CharacterAttackHandler(_config, _bulletSystem);
+            _characterAttackHandler = new CharacterAttackHandler(_config, _bulletSystem);
             for (var i = 0; i < 7; i++)
             {
-                Enemy enemy = Instantiate(this.prefab, this.container);
-                this.enemyPool.Enqueue(enemy);
+                Enemy enemy = Instantiate(_prefab, _container);
+                _enemyPool.Enqueue(enemy);
             }
         }
 
@@ -44,45 +38,45 @@ namespace ShootEmUp
             {
                 yield return new WaitForSeconds(Random.Range(1, 2));
                 
-                if (!this.enemyPool.TryDequeue(out Enemy enemy))
+                if (!_enemyPool.TryDequeue(out Enemy enemy))
                 {
-                    enemy = Instantiate(this.prefab, this.container);
+                    enemy = Instantiate(_prefab, _container);
                 }
 
-                enemy.transform.SetParent(this.worldTransform);
+                enemy.transform.SetParent(_worldTransform);
 
-                Transform spawnPosition = this.RandomPoint(this.spawnPositions);
+                Transform spawnPosition = RandomPoint(_spawnPositions);
                 enemy.transform.position = spawnPosition.position;
 
-                Transform attackPosition = this.RandomPoint(this.attackPositions);
+                Transform attackPosition = RandomPoint(_attackPositions);
                 enemy.SetDestination(attackPosition.position);
-                enemy.enemyAttackComponent.target = this.character;
+                enemy.enemyAttackComponent.target = _character;
 
-                if (this.m_activeEnemies.Count < 5 && this.m_activeEnemies.Add(enemy))
+                if (_activeEnemies.Count < 5 && _activeEnemies.Add(enemy))
                 {
-                    enemy.enemyAttackComponent.OnFire += this.OnFire;
+                    enemy.enemyAttackComponent.OnFire += OnFire;
                 }
             }
         }
 
         private void FixedUpdate()
         {
-            foreach (Enemy enemy in m_activeEnemies.ToArray())
+            foreach (Enemy enemy in _activeEnemies.ToArray())
             {
                 if (enemy.health <= 0)
                 {
-                    enemy.enemyAttackComponent.OnFire -= this.OnFire;
-                    enemy.transform.SetParent(this.container);
+                    enemy.enemyAttackComponent.OnFire -= OnFire;
+                    enemy.transform.SetParent(_container);
 
-                    m_activeEnemies.Remove(enemy);
-                    this.enemyPool.Enqueue(enemy);
+                    _activeEnemies.Remove(enemy);
+                    _enemyPool.Enqueue(enemy);
                 }
             }
         }
 
         private void OnFire(Vector2 position, Vector2 direction)
         {
-            characterAttackHandler.Attack(position, direction);
+            _characterAttackHandler.Attack(position, direction);
         }
 
         private Transform RandomPoint(Transform[] points)
