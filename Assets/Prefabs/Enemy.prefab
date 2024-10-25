@@ -13,6 +13,8 @@ GameObject:
   - component: {fileID: 5568771391735819375}
   - component: {fileID: 659620479434099170}
   - component: {fileID: 102605417607457000}
+  - component: {fileID: 6823579898106936979}
+  - component: {fileID: 892389255079492435}
   m_Layer: 11
   m_Name: Enemy
   m_TagString: Untagged
@@ -162,12 +164,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e09a324f54d94d6e84681731f36566c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isPlayer: 0
-  firePoint: {fileID: 3195880656587174614}
+  _enemyAttackComponent: {fileID: 6823579898106936979}
+  _enemyMoveComponent: {fileID: 892389255079492435}
   health: 3
-  _rigidbody: {fileID: 659620479434099170}
-  speed: 3
+--- !u!114 &6823579898106936979
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 559606060570185700}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c005075058c4509b242333121ceeddd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   countdown: 1
+  firePoint: {fileID: 3195880656587174614}
+--- !u!114 &892389255079492435
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 559606060570185700}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b488cb055c24d5bbb939c8f53bd2368, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _rigidbody: {fileID: 659620479434099170}
+  speed: 5
 --- !u!1 &2239154907127902911
 GameObject:
   m_ObjectHideFlags: 0

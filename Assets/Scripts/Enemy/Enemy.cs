@@ -3,80 +3,38 @@ using UnityEngine;
 
 namespace ShootEmUp
 {
-    public sealed class Enemy : MonoBehaviour
+    public sealed class Enemy : MonoBehaviour, IDamageable
     {
         public delegate void FireHandler(Vector2 position, Vector2 direction);
+
+        [SerializeField] private EnemyAttackComponent _enemyAttackComponent;
+        [SerializeField] private EnemyMoveComponent _enemyMoveComponent;
+        [SerializeField] public int health;
         
-        public event FireHandler OnFire;
-
-        [SerializeField]
-        public bool isPlayer;
-        
-        [SerializeField]
-        public Transform firePoint;
-        
-        [SerializeField]
-        public int health;
-
-        [SerializeField]
-        public Rigidbody2D _rigidbody;
-
-        [SerializeField]
-        public float speed = 5.0f;
-
-        [SerializeField]
-        private float countdown;
-
-        [NonSerialized]
-        public Player target;
-
-        private Vector2 destination;
-        private float currentTime;
-        private bool isPointReached;
-
-        public void Reset()
-        {
-            this.currentTime = this.countdown;
-        }
+        public EnemyAttackComponent enemyAttackComponent => _enemyAttackComponent;
         
         public void SetDestination(Vector2 endPoint)
         {
-            this.destination = endPoint;
-            this.isPointReached = false;
+            _enemyMoveComponent.SetDestination(endPoint);
         }
 
         private void FixedUpdate()
         {
-            if (this.isPointReached)
+            if (_enemyMoveComponent.GetDestinationReached())
             {
-                //Attack:
-                if (this.target.health <= 0)
-                    return;
-
-                this.currentTime -= Time.fixedDeltaTime;
-                if (this.currentTime <= 0)
-                {
-                    Vector2 startPosition = this.firePoint.position;
-                    Vector2 vector = (Vector2) this.target.transform.position - startPosition;
-                    Vector2 direction = vector.normalized;
-                    this.OnFire?.Invoke(startPosition, direction);
-                    
-                    this.currentTime += this.countdown;
-                }
+                _enemyAttackComponent.Attack();
             }
             else
             {
-                //Move:
-                Vector2 vector = this.destination - (Vector2) this.transform.position;
-                if (vector.magnitude <= 0.25f)
-                {
-                    this.isPointReached = true;
-                    return;
-                }
+                _enemyMoveComponent.Move();
+            }
+        }
 
-                Vector2 direction = vector.normalized * Time.fixedDeltaTime;
-                Vector2 nextPosition = _rigidbody.position + direction * speed;
-                _rigidbody.MovePosition(nextPosition);
+        public void TakeDamage(int damage)
+        {
+            if (health > 0)
+            {
+                health = Mathf.Max(0, health - damage);
             }
         }
     }

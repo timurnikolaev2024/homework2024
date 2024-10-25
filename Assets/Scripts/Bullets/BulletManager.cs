@@ -5,29 +5,15 @@ namespace ShootEmUp
 {
     public sealed class BulletManager : MonoBehaviour
     {
-        [SerializeField]
-        public Bullet prefab;
-
-        [SerializeField]
-        public Transform worldTransform;
-
-        [SerializeField]
-        private LevelBounds levelBounds;
+        [SerializeField] private LevelBounds levelBounds;
+        [SerializeField] private BulletSpawner _bulletSpawner;
         
-        [SerializeField]
-        private Transform container;
-
-        public readonly HashSet<Bullet> m_activeBullets = new();
-        public readonly Queue<Bullet> m_bulletPool = new();
+        private readonly HashSet<Bullet> m_activeBullets = new();
         private readonly List<Bullet> m_cache = new();
 
         private void Awake()
         {
-            for (var i = 0; i < 10; i++)
-            {
-                Bullet bullet = Instantiate(this.prefab, this.container);
-                this.m_bulletPool.Enqueue(bullet);
-            }
+            _bulletSpawner.FillPool(10);
         }
 
         private void FixedUpdate()
@@ -45,31 +31,10 @@ namespace ShootEmUp
             }
         }
 
-        public void SpawnBullet(
-            Vector2 position,
-            Color color,
-            int physicsLayer,
-            int damage,
-            bool isPlayer,
-            Vector2 velocity
-        )
+        public void SpawnBullet(BulletSpawnSettings settings)
         {
-            if (this.m_bulletPool.TryDequeue(out var bullet))
-            {
-                bullet.transform.SetParent(this.worldTransform);
-            }
-            else
-            {
-                bullet = Instantiate(this.prefab, this.worldTransform);
-            }
-
-            bullet.transform.position = position;
-            bullet.spriteRenderer.color = color;
-            bullet.gameObject.layer = physicsLayer;
-            bullet.damage = damage;
-            bullet.isPlayer = isPlayer;
-            bullet.rigidbody2D.velocity = velocity;
-
+            var bullet = _bulletSpawner.SpawnBullet(settings);
+            
             if (m_activeBullets.Add(bullet))
             {
                 bullet.OnCollisionEntered += OnBulletCollision;
@@ -87,8 +52,7 @@ namespace ShootEmUp
             if (this.m_activeBullets.Remove(bullet))
             {
                 bullet.OnCollisionEntered -= this.OnBulletCollision;
-                bullet.transform.SetParent(this.container);
-                this.m_bulletPool.Enqueue(bullet);
+                _bulletSpawner.RemoveBullet(bullet);
             }
         }
 
@@ -97,30 +61,10 @@ namespace ShootEmUp
             int damage = bullet.damage;
             if (damage <= 0)
                 return;
-            
-            if (other.TryGetComponent(out Player player))
-            {
-                if (bullet.isPlayer != player.isPlayer)
-                {
-                    if (player.health <= 0)
-                        return;
 
-                    player.health = Mathf.Max(0, player.health - damage);
-                    player.OnHealthChanged?.Invoke(player, player.health);
-
-                    if (player.health <= 0)
-                        player.OnHealthEmpty?.Invoke(player);
-                }
-            }
-            else if (other.TryGetComponent(out Enemy enemy))
+            if (other.TryGetComponent(out IDamageable character))
             {
-                if (bullet.isPlayer != enemy.isPlayer)
-                {
-                    if (enemy.health > 0)
-                    {
-                        enemy.health = Mathf.Max(0, enemy.health - damage);
-                    }
-                }
+                character.TakeDamage(damage);
             }
         }
     }

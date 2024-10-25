@@ -1,56 +1,43 @@
+using System;
 using UnityEngine;
 
 namespace ShootEmUp
 {
     public sealed class PlayerController : MonoBehaviour
     {
-        [SerializeField]
-        private Player character;
+        [SerializeField] private Player character;
 
-        [SerializeField]
-        private BulletManager bulletManager;
+        [SerializeField] private BulletManager bulletManager;
+        
+        [SerializeField] private BulletConfig bulletConfig;
+
+        private readonly PlayerInput playerInput = new();
+        private CharacterAttackHandler characterAttackHandler;
 
         private bool fireRequired;
         private float moveDirection;
 
         private void Awake()
         {
-            this.character.OnHealthEmpty += _ => Time.timeScale = 0;
+            characterAttackHandler = new(bulletConfig, bulletManager);
         }
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Space)) 
-                fireRequired = true;
-
-            if (Input.GetKey(KeyCode.LeftArrow))
-                this.moveDirection = -1;
-            else if (Input.GetKey(KeyCode.RightArrow))
-                this.moveDirection = 1;
-            else
-                this.moveDirection = 0;
-        }
-
-        private void FixedUpdate()
-        {
-            if (fireRequired)
+            if (playerInput.GetFireRequired())
             {
-                bulletManager.SpawnBullet(
-                    this.character.firePoint.position,
-                    Color.blue,
-                    (int) PhysicsLayer.PLAYER_BULLET,
-                    1,
-                    true,
-                    this.character.firePoint.rotation * Vector3.up * 3
-                );
+                characterAttackHandler.Attack(character.firePoint.position, 
+                    character.firePoint.rotation * Vector3.up);
 
                 fireRequired = false;
             }
             
-            Vector2 moveDirection = new Vector2(this.moveDirection, 0);
-            Vector2 moveStep = moveDirection * Time.fixedDeltaTime * character.speed;
-            Vector2 targetPosition = character._rigidbody.position + moveStep;
-            character._rigidbody.MovePosition(targetPosition);
+            moveDirection = playerInput.GetDirection();
+        }
+
+        private void FixedUpdate()
+        {
+            character.Move(this.moveDirection);
         }
     }
 }

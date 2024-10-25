@@ -3,24 +3,34 @@ using UnityEngine;
 
 namespace ShootEmUp
 {
-    public sealed class Player : MonoBehaviour
+    public sealed class Player : MonoBehaviour, IDamageable
     {
         public Action<Player, int> OnHealthChanged;
         public Action<Player> OnHealthEmpty;
-
-        [SerializeField]
-        public bool isPlayer;
         
-        [SerializeField]
-        public Transform firePoint;
-        
-        [SerializeField]
-        public int health;
+        [SerializeField] public Transform firePoint;
+        [SerializeField] public int health;
+        [SerializeField] private Rigidbody2D _rigidbody;
+        [SerializeField] private float speed = 5.0f;
 
-        [SerializeField]
-        public Rigidbody2D _rigidbody;
+        public void Move(float floatDirection)
+        {
+            Vector2 moveDirection = new Vector2(floatDirection, 0);
+            Vector2 moveStep = moveDirection * Time.fixedDeltaTime * speed;
+            Vector2 targetPosition = _rigidbody.position + moveStep;
+            _rigidbody.MovePosition(targetPosition);
+        }
 
-        [SerializeField]
-        public float speed = 5.0f;
+        public void TakeDamage(int damage)
+        {
+            if (health <= 0)
+                return;
+
+            health = Mathf.Max(0, health - damage);
+            OnHealthChanged?.Invoke(this, health);
+
+            if (health <= 0)
+                OnHealthEmpty?.Invoke(this);
+        }
     }
 }

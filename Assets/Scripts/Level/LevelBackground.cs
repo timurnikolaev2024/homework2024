@@ -5,6 +5,8 @@ namespace ShootEmUp
 {
     public sealed class LevelBackground : MonoBehaviour
     {
+        [SerializeField] private Params m_params;
+        
         private float startPositionY;
         private float endPositionY;
         private float movingSpeedY;
@@ -12,9 +14,6 @@ namespace ShootEmUp
         private float positionZ;
 
         private Transform myTransform;
-
-        [SerializeField]
-        private Params m_params;
 
         private void Awake()
         {
