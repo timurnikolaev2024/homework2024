@@ -18,7 +18,6 @@ namespace ShootEmUp
         {
             currentTime = _countdown;
         }
-        
 
         public void Attack()
         {
